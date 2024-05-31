@@ -1,0 +1,36 @@
+version: '2.4'
+volumes:
+  car_data: {}
+  car_model: {}
+  tailscale_data: {}
+services:
+  donkeycar:
+    image: wfowler34/edgeracer:1.8
+    ports:
+      - '80:8887'
+      - '8000:8000'
+      - '8001:8001'
+      - '8002:8002'
+      - '22:22'
+    devices:
+      - /dev/video0:/dev/video0
+      - /dev/vchiq:/dev/vchiq
+      - /dev/vcsm-cma:/dev/vcsm-cma
+      - /dev/i2c-1:/dev/i2c-1
+    volumes:
+      - car_data:/root/car/data
+      - car_model:/root/car/model
+  tailscale-donkeycar:
+    image: tailscale/tailscale:latest
+    hostname: tailscale-donkeycar
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+      - TS_ROUTES=172.16.0.0/16
+    volumes:
+      - tailscale_data:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
